@@ -1,6 +1,10 @@
-<!DOCTYPE html><html lang="de"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-<title>Fokus Todos · Jet Age Cloud</title><meta name="theme-color" content="#0c1b2a">
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Fokus Todos · Jet Age Cloud</title>
+<meta name="theme-color" content="#0c1b2a">
 <style>
 :root{--sky1:#0a1a2a;--sky2:#1a2c46;--p1:#e9f0f6;--p2:#dfe8ee;--ink:#18222c;--muted:#5a6a78;--acc1:#92f2d0;--acc2:#ffb870}
 *{box-sizing:border-box}body{margin:0;color:#eef6ff;background:radial-gradient(1000px 500px at 20% -10%,rgba(255,255,255,.06),transparent 60%),radial-gradient(900px 500px at 120% 120%,rgba(255,255,255,.04),transparent 60%),linear-gradient(160deg,var(--sky1),var(--sky2));font-family:"Futura","Avenir Next","SF Pro Text",-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial}
@@ -8,7 +12,7 @@
 .panel{color:var(--ink);background:linear-gradient(180deg,var(--p1),var(--p2));border:1.5px solid rgba(255,255,255,.65);border-right-color:rgba(0,0,0,.15);border-bottom-color:rgba(0,0,0,.2);border-radius:20px;box-shadow:0 18px 48px rgba(0,0,0,.45);overflow:hidden}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .userchip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;text-decoration:none;color:#092033;background:linear-gradient(180deg,#fff,#e7eef6);border:1px solid rgba(0,0,0,.18);box-shadow:0 6px 16px rgba(0,0,0,.18);font-weight:900}
-.userchip.logged{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.78)) padding-box,linear-gradient(135deg,var(--acc1),var(--acc2)) border-box;border:1px solid transparent}
+.userchip.logged{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.78)) padding-box,linear-gradient(135deg,var(--acc1),var(--acc2)) border-box;border:1.5px solid transparent}
 .timer-grid{display:grid;grid-template-columns:1fr 112px;gap:14px}
 .timer{display:flex;flex-direction:column;gap:14px;padding:20px;align-items:center;text-align:center}
 .time{font-size:56px;font-weight:1000;letter-spacing:2px;cursor:pointer;color:var(--ink)}
@@ -16,7 +20,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .btn.ghost{background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.68));color:var(--ink);border-color:rgba(0,0,0,.18)}
 .side-tile{background:linear-gradient(180deg,var(--p1),var(--p2));border:1.5px solid rgba(255,255,255,.65);border-right-color:rgba(0,0,0,.15);border-bottom-color:rgba(0,0,0,.2);border-radius:26px;padding:10px;display:flex;flex-direction:column;gap:10px}
 .coin-tile{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:14px;padding:9px 6px;background:#f2fff9;border:1.5px dashed rgba(0,0,0,.18);font-weight:900;color:var(--ink)}
-.tile-btn{width:100%;height:56px;border-radius:16px;display:grid;place-items:center;border:1.5px solid rgba(0,0,0,.18);background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.68));color:var(--ink);font-size:22px}
+.tile-btn{width:100%;height:56px;border-radius:16px;display:grid;place-items:center;border:1.5px solid rgba(0,0,0,.18);background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.68));color:var(--ink);font-size:22px;transition:background .2s ease,border-color .2s ease,transform .06s ease}
+.tile-btn.active{background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.8)) padding-box,linear-gradient(135deg,var(--acc1),var(--acc2)) border-box;border-color:transparent;color:#1b232b}
 .add-row{display:flex;gap:10px;padding:12px;align-items:center}
 .add-row input{flex:1;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.76));color:var(--ink);border:1.5px solid rgba(0,0,0,.18);border-radius:14px;padding:14px;font-size:16px}
 .list{list-style:none;margin:0;padding:0}.item{display:flex;gap:10px;align-items:center;padding:12px;border-top:1px dashed rgba(0,0,0,.15)}
@@ -25,7 +30,9 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .actions{display:flex;gap:10px;padding:12px}.danger{background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.6)) padding-box,linear-gradient(135deg,#ffa0a0,#ff6565) border-box;border:1.5px solid transparent;color:#2a1a1a}
 .fs-wrap{display:none;position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,var(--p1),var(--p2));align-items:center;justify-content:center;flex-direction:column;gap:16px;color:var(--ink)}
 .fs-wrap.show{display:flex}.fs-time{font-size:16vw;font-weight:1000}
-</style></head><body>
+</style>
+</head>
+<body>
 <div class="app">
   <header>
     <div style="display:flex;gap:12px;align-items:center">
@@ -46,8 +53,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
     </div>
     <aside class="side-tile">
       <button class="coin-tile" id="coinTile"><span>🪙</span><span id="coinCount">0</span></button>
-      <button class="tile-btn" id="fsBtn">⛶</button>
-      <button class="tile-btn" id="awakeBtn">🔆</button>
+      <button class="tile-btn" id="fsBtn" aria-pressed="false" title="Vollbild">⛶</button>
+      <button class="tile-btn" id="awakeBtn" aria-pressed="false" title="Monitor anlassen">🔆</button>
     </aside>
   </section>
 
@@ -71,11 +78,13 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
  const timeEl=$("#time"),startBtn=$("#startBtn"),resetBtn=$("#resetBtn"),selectedTaskLabel=$("#selectedTaskLabel");
  const fsBtn=$("#fsBtn"),fsWrap=$("#fsWrap"),fsTime=$("#fsTime"),fsTask=$("#fsTask"),fsStart=$("#fsStart"),fsExit=$("#fsExit");
  const loginLink=$("#loginLink"); const lenModal=$("#lenModal"),lenSelect=$("#lenSelect"),lenSave=$("#lenSave"),lenCancel=$("#lenCancel");
+ const awakeBtn=$("#awakeBtn");
  const STORAGE_KEY="focusTodos.v1", SETTINGS_KEY="focusTodos.settings.v1", UI_KEY="focusTodos.ui.v1";
- let state={tasks:[],selectedId:null}; let settings={focusMinutes:25};
+ let state={tasks:[],selectedId:null}; let settings={focusMinutes:25, keepAwake:false};
  let timer={running:false,remaining:25*60,intervalId:null,boundTaskId:null};
+ let wakeLock=null;
 
- async function fetchSession(){ try{ const r=await fetch('/api/auth/session'); if(!r.ok) return; const s=await r.json(); if(s?.user){ loginLink.textContent=s.user.name||s.user.email; loginLink.classList.add('logged'); loginLink.href='/api/auth/signout?callbackUrl=/app.html'; cloud.enabled=true; } }catch(e){} }
+ async function fetchSession(){ try{ const r=await fetch('/api/auth/session'); if(!r.ok) return; const s=await r.json(); if(s?.user){ loginLink.textContent=s.user.name||s.user.email; loginLink.classList.add('logged'); loginLink.href='/api/auth/signout?callbackUrl=/app.html'; } }catch(e){} }
  const cloud={enabled:false};
  async function cloudLoad(){ if(!cloud.enabled) return; try{ const r=await fetch('/api/tasks'); if(!r.ok) return; const d=await r.json(); state.tasks=d.tasks||[]; saveLocal(); render(); }catch(e){} }
  async function cloudCreate(t){ if(!cloud.enabled) return; fetch('/api/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(t)}); }
@@ -109,15 +118,51 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
  function start(){ if(timer.running){ timer.running=false; clearInterval(timer.intervalId); updateTimerUI(); return; } if(!state.selectedId){ const f=state.tasks.find(t=>!t.done); if(f) state.selectedId=f.id; else return alert('Erst eine Aufgabe hinzufügen.'); } timer.boundTaskId=state.selectedId; if(timer.remaining<=0||timer.remaining>settings.focusMinutes*60) timer.remaining=settings.focusMinutes*60; timer.running=true; clearInterval(timer.intervalId); timer.intervalId=setInterval(tick,1000); updateTimerUI(); }
  function reset(){ timer.running=false; clearInterval(timer.intervalId); timer.remaining=settings.focusMinutes*60; updateTimerUI(); }
 
+ // ---- Wake Lock (Monitor anlassen) ----
+ function updateAwakeUI(){ const active = !!(wakeLock || settings.keepAwake); awakeBtn.classList.toggle('active', active); awakeBtn.setAttribute('aria-pressed', active ? 'true' : 'false'); }
+ async function requestWakeLock(){
+   if(!('wakeLock' in navigator)){ alert('Wake Lock wird von deinem Browser nicht unterstützt.'); settings.keepAwake=false; saveLocal(); updateAwakeUI(); return; }
+   try{
+     wakeLock = await navigator.wakeLock.request('screen');
+     updateAwakeUI();
+     wakeLock.addEventListener('release', ()=>{
+       if(settings.keepAwake && document.visibilityState === 'visible'){ requestWakeLock(); }
+       else { wakeLock=null; settings.keepAwake=false; saveLocal(); updateAwakeUI(); }
+     });
+   }catch(e){
+     alert('Konnte Wake Lock nicht aktivieren.');
+     settings.keepAwake=false; saveLocal(); updateAwakeUI();
+   }
+ }
+ function releaseWakeLock(){ try{ if(wakeLock){ wakeLock.release(); } }catch(e){} wakeLock=null; updateAwakeUI(); }
+
+ document.addEventListener('visibilitychange', ()=>{
+   if(document.visibilityState==='visible' && settings.keepAwake && !wakeLock){ requestWakeLock(); }
+ });
+
  // events
- addBtn.onclick=()=>{ const v=(inputEl.value||'').trim(); if(!v) return; const t={id:uid(),text:v,done:false,pomodoros:0,createdAt:Date.now()}; state.tasks.unshift(t); inputEl.value=''; saveLocal(); render(); cloudCreate(t); };
+ addBtn.onclick=()=>{ const v=(inputEl.value||'').trim(); if(!v) return; const t={id:uid(),text=v,done:false,pomodoros:0,createdAt:Date.now()}; state.tasks.unshift(t); inputEl.value=''; saveLocal(); render(); cloudCreate(t); };
  inputEl.onkeydown=e=>{ if(e.key==='Enter') addBtn.click(); };
  clearDoneBtn.onclick=()=>{ if(!state.tasks.some(t=>t.done)) return; state.tasks=state.tasks.filter(t=>!t.done); if(!state.tasks.find(x=>x.id===state.selectedId)) state.selectedId=null; saveLocal(); render(); cloudClearDone(); };
  eraseAllBtn.onclick=()=>{ if(!confirm('Wirklich alles löschen?')) return; state={tasks:[],selectedId:null}; saveLocal(); render(); cloudEraseAll(); };
  timeEl.onclick=openLen; lenSave.onclick=()=>{ settings.focusMinutes=parseInt(lenSelect.value,10)||25; saveLocal(); timer.remaining=settings.focusMinutes*60; closeLen(); updateTimerUI(); }; lenCancel.onclick=closeLen;
  startBtn.onclick=start; fsStart.onclick=start; resetBtn.onclick=reset;
  fsBtn.onclick=()=>{ fsWrap.classList.contains('show') ? (fsWrap.classList.remove('show')) : fsWrap.classList.add('show'); }; fsExit.onclick=()=>fsWrap.classList.remove('show');
+ awakeBtn.onclick=async()=>{
+   if(settings.keepAwake || wakeLock){ settings.keepAwake=false; saveLocal(); releaseWakeLock(); }
+   else { settings.keepAwake=true; saveLocal(); await requestWakeLock(); }
+   updateAwakeUI();
+ };
 
- (async function init(){ const now=new Date(); $("#today").textContent=new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(now); loadLocal(); updateTimerUI(); render(); await fetchSession(); await cloudLoad(); })();
+ (async function init(){
+   const now=new Date(); $("#today").textContent=new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(now);
+   for(let i=1;i<=180;i++){ const o=document.createElement('option'); o.value=i; o.textContent=i; lenSelect.appendChild(o); }
+   loadLocal(); updateTimerUI(); render();
+   await fetchSession(); await cloudLoad();
+   updateAwakeUI();
+   if(settings.keepAwake) requestWakeLock();
+ })();
 })();
-</script></body></html>
+</script>
+</body>
+</html>
