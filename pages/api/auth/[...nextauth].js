@@ -2,7 +2,7 @@
 import NextAuth from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 
-export const authOptions = {
+const handler = NextAuth({
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID,
@@ -12,11 +12,11 @@ export const authOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, account, profile }) {
-      // nützliche Infos an den Token hängen
+      // An GitHub-Daten kommen
       if (account?.provider === "github" && profile) {
-        token.githubId = profile.id?.toString();
-        token.name = profile.name || token.name;
-        token.email = profile.email || token.email;
+        token.githubId = String(profile.id ?? "");
+        token.name = profile.name ?? token.name;
+        token.email = profile.email ?? token.email;
       }
       return token;
     },
@@ -25,7 +25,6 @@ export const authOptions = {
       return session;
     },
   },
-};
+});
 
-// WICHTIG für "pages/api": Default-Export!
-export default NextAuth(authOptions);
+export default handler; // << WICHTIG bei pages/api
