@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="de"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<title>Fokus Todos · Jet Age Cloud</title><meta name="theme-color" content="#0c1b2a">
+<style>
+:root{--sky1:#0a1a2a;--sky2:#1a2c46;--p1:#e9f0f6;--p2:#dfe8ee;--ink:#18222c;--muted:#5a6a78;--acc1:#92f2d0;--acc2:#ffb870}
+*{box-sizing:border-box}body{margin:0;color:#eef6ff;background:radial-gradient(1000px 500px at 20% -10%,rgba(255,255,255,.06),transparent 60%),radial-gradient(900px 500px at 120% 120%,rgba(255,255,255,.04),transparent 60%),linear-gradient(160deg,var(--sky1),var(--sky2));font-family:"Futura","Avenir Next","SF Pro Text",-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial}
+.app{max-width:940px;margin:0 auto;padding:18px 16px 28px;display:flex;flex-direction:column;gap:14px}
+.panel{color:var(--ink);background:linear-gradient(180deg,var(--p1),var(--p2));border:1.5px solid rgba(255,255,255,.65);border-right-color:rgba(0,0,0,.15);border-bottom-color:rgba(0,0,0,.2);border-radius:20px;box-shadow:0 18px 48px rgba(0,0,0,.45);overflow:hidden}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.userchip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;text-decoration:none;color:#092033;background:linear-gradient(180deg,#fff,#e7eef6);border:1px solid rgba(0,0,0,.18);box-shadow:0 6px 16px rgba(0,0,0,.18);font-weight:900}
+.userchip.logged{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.78)) padding-box,linear-gradient(135deg,var(--acc1),var(--acc2)) border-box;border:1px solid transparent}
+.timer-grid{display:grid;grid-template-columns:1fr 112px;gap:14px}
+.timer{display:flex;flex-direction:column;gap:14px;padding:20px;align-items:center;text-align:center}
+.time{font-size:56px;font-weight:1000;letter-spacing:2px;cursor:pointer;color:var(--ink)}
+.controls{display:flex;gap:10px;width:100%}.btn{flex:1;border-radius:16px;padding:12px 16px;color:#1b232b;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.7)) padding-box,linear-gradient(135deg,var(--acc1),var(--acc2)) border-box;border:1.5px solid transparent;font-weight:900}
+.btn.ghost{background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.68));color:var(--ink);border-color:rgba(0,0,0,.18)}
+.side-tile{background:linear-gradient(180deg,var(--p1),var(--p2));border:1.5px solid rgba(255,255,255,.65);border-right-color:rgba(0,0,0,.15);border-bottom-color:rgba(0,0,0,.2);border-radius:26px;padding:10px;display:flex;flex-direction:column;gap:10px}
+.coin-tile{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:14px;padding:9px 6px;background:#f2fff9;border:1.5px dashed rgba(0,0,0,.18);font-weight:900;color:var(--ink)}
+.tile-btn{width:100%;height:56px;border-radius:16px;display:grid;place-items:center;border:1.5px solid rgba(0,0,0,.18);background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.68));color:var(--ink);font-size:22px}
+.add-row{display:flex;gap:10px;padding:12px;align-items:center}
+.add-row input{flex:1;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.76));color:var(--ink);border:1.5px solid rgba(0,0,0,.18);border-radius:14px;padding:14px;font-size:16px}
+.list{list-style:none;margin:0;padding:0}.item{display:flex;gap:10px;align-items:center;padding:12px;border-top:1px dashed rgba(0,0,0,.15)}
+.select-btn{border:1.5px solid rgba(0,0,0,.18);background:#fff;border-radius:10px;padding:8px 12px;font-weight:800}
+.item.selected{background:rgba(146,242,208,.16);box-shadow:inset 0 0 0 2px rgba(146,242,208,.35)}
+.actions{display:flex;gap:10px;padding:12px}.danger{background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.6)) padding-box,linear-gradient(135deg,#ffa0a0,#ff6565) border-box;border:1.5px solid transparent;color:#2a1a1a}
+.fs-wrap{display:none;position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,var(--p1),var(--p2));align-items:center;justify-content:center;flex-direction:column;gap:16px;color:var(--ink)}
+.fs-wrap.show{display:flex}.fs-time{font-size:16vw;font-weight:1000}
+</style></head><body>
+<div class="app">
+  <header>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div style="font-weight:900;letter-spacing:.3px;text-transform:uppercase;color:#cfe7ff">Fokus Todos</div>
+      <div id="today" style="color:#aac7e5;font-size:.92rem"></div>
+    </div>
+    <a id="loginLink" class="userchip" href="/api/auth/signin?callbackUrl=/app.html">Anmelden</a>
+  </header>
+
+  <section class="timer-grid">
+    <div class="panel timer">
+      <div id="selectedTaskLabel" style="color:#5a6a78">Keine Aufgabe ausgewählt</div>
+      <div class="time" id="time" title="Zum Ändern tippen">25:00</div>
+      <div class="controls">
+        <button class="btn" id="startBtn">Start</button>
+        <button class="btn ghost" id="resetBtn" disabled>Reset</button>
+      </div>
+    </div>
+    <aside class="side-tile">
+      <button class="coin-tile" id="coinTile"><span>🪙</span><span id="coinCount">0</span></button>
+      <button class="tile-btn" id="fsBtn">⛶</button>
+      <button class="tile-btn" id="awakeBtn">🔆</button>
+    </aside>
+  </section>
+
+  <section class="panel add-row"><input id="taskInput" placeholder="Neue Aufgabe…"><button id="addBtn" class="btn" style="flex:0 0 46px">+</button></section>
+  <section class="panel"><ul class="list" id="list"></ul></section>
+  <section class="panel actions"><button class="btn ghost" id="clearDoneBtn">Erledigte entfernen</button><button class="btn danger" id="eraseAllBtn">Alles löschen</button></section>
+</div>
+
+<div class="fs-wrap" id="fsWrap"><div id="fsTask">Fokus</div><div class="fs-time" id="fsTime">25:00</div><div style="display:flex;gap:10px"><button class="btn" id="fsStart">Start</button><button class="btn ghost" id="fsExit">Beenden</button></div></div>
+
+<div id="lenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center">
+  <div class="panel" style="width:min(520px,92vw);padding:16px"><b>Fokuslänge (min)</b><div><select id="lenSelect"></select></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button class="btn" id="lenSave">Speichern</button><button class="btn ghost" id="lenCancel">Abbrechen</button></div>
+  </div>
+</div>
+
+<script>
+(()=>{
+ const $=s=>document.querySelector(s);
+ const listEl=$("#list"),inputEl=$("#taskInput"),addBtn=$("#addBtn"),clearDoneBtn=$("#clearDoneBtn"),eraseAllBtn=$("#eraseAllBtn");
+ const timeEl=$("#time"),startBtn=$("#startBtn"),resetBtn=$("#resetBtn"),selectedTaskLabel=$("#selectedTaskLabel");
+ const fsBtn=$("#fsBtn"),fsWrap=$("#fsWrap"),fsTime=$("#fsTime"),fsTask=$("#fsTask"),fsStart=$("#fsStart"),fsExit=$("#fsExit");
+ const loginLink=$("#loginLink"); const lenModal=$("#lenModal"),lenSelect=$("#lenSelect"),lenSave=$("#lenSave"),lenCancel=$("#lenCancel");
+ const STORAGE_KEY="focusTodos.v1", SETTINGS_KEY="focusTodos.settings.v1", UI_KEY="focusTodos.ui.v1";
+ let state={tasks:[],selectedId:null}; let settings={focusMinutes:25};
+ let timer={running:false,remaining:25*60,intervalId:null,boundTaskId:null};
+
+ async function fetchSession(){ try{ const r=await fetch('/api/auth/session'); if(!r.ok) return; const s=await r.json(); if(s?.user){ loginLink.textContent=s.user.name||s.user.email; loginLink.classList.add('logged'); loginLink.href='/api/auth/signout?callbackUrl=/app.html'; cloud.enabled=true; } }catch(e){} }
+ const cloud={enabled:false};
+ async function cloudLoad(){ if(!cloud.enabled) return; try{ const r=await fetch('/api/tasks'); if(!r.ok) return; const d=await r.json(); state.tasks=d.tasks||[]; saveLocal(); render(); }catch(e){} }
+ async function cloudCreate(t){ if(!cloud.enabled) return; fetch('/api/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(t)}); }
+ async function cloudUpdate(id,updates){ if(!cloud.enabled) return; fetch('/api/tasks',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,updates})}); }
+ async function cloudClearDone(){ if(!cloud.enabled) return; fetch('/api/tasks?clearDone=1',{method:'DELETE'}); }
+ async function cloudEraseAll(){ if(!cloud.enabled) return; fetch('/api/tasks?eraseAll=1',{method:'DELETE'}); }
+
+ function loadLocal(){ try{const raw=localStorage.getItem(STORAGE_KEY); if(raw) state=JSON.parse(raw);}catch(e){} try{const s=localStorage.getItem(SETTINGS_KEY); if(s) settings=Object.assign(settings,JSON.parse(s));}catch(e){} try{const u=localStorage.getItem(UI_KEY); if(u){const x=JSON.parse(u); if(x.selectedId!==undefined) state.selectedId=x.selectedId;}}catch(e){} timer.remaining=settings.focusMinutes*60; }
+ function saveLocal(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings)); localStorage.setItem(UI_KEY,JSON.stringify({selectedId:state.selectedId})); }
+
+ const uid=()=> (Date.now().toString(36)+Math.random().toString(36).slice(2,8));
+ const fmt=s=>`${Math.floor(s/60).toString().padStart(2,'0')}:${Math.floor(s%60).toString().padStart(2,'0')}`;
+
+ function render(){
+   listEl.innerHTML=""; let sel=false;
+   state.tasks.forEach(t=>{
+     const li=document.createElement('li'); li.className="item"+(state.selectedId===t.id?" selected":"");
+     const cb=document.createElement('input'); cb.type="checkbox"; cb.checked=!!t.done; cb.onchange=()=>{t.done=cb.checked; saveLocal(); cloudUpdate(t.id,{done:t.done});};
+     const label=document.createElement('div'); label.style.flex='1'; label.textContent=t.text; label.ondblclick=()=>{ const i=document.createElement('input'); i.value=t.text; i.onblur=()=>{ t.text=i.value||t.text; label.replaceWith(label); label.textContent=t.text; saveLocal(); cloudUpdate(t.id,{text:t.text}); }; label.replaceWith(i); i.focus(); };
+     const selBtn=document.createElement('button'); selBtn.className='select-btn'; selBtn.textContent=(state.selectedId===t.id)?'Ausgewählt':'Fokussieren'; selBtn.onclick=()=>{ if(timer.running&&state.selectedId!==t.id){alert('Timer läuft – erst stoppen.');return;} state.selectedId=(state.selectedId===t.id)?null:t.id; saveLocal(); render(); };
+     li.append(cb,label,selBtn); listEl.appendChild(li); if(state.selectedId===t.id) sel=true;
+   });
+   if(!sel) state.selectedId=null;
+   const t=state.tasks.find(x=>x.id===state.selectedId); selectedTaskLabel.textContent=t?`Fokus: ${t.text}`:'Keine Aufgabe ausgewählt'; fsTask.textContent=t? t.text:'Fokus';
+ }
+
+ function tick(){ if(!timer.running) return; timer.remaining--; if(timer.remaining<=0){ timer.running=false; clearInterval(timer.intervalId); timer.remaining=0; const t=state.tasks.find(x=>x.id===timer.boundTaskId); if(t){ t.pomodoros=(t.pomodoros||0)+1; saveLocal(); cloudUpdate(t.id,{pomodoros:t.pomodoros}); } alert('Pomodoro geschafft!'); } updateTimerUI(); }
+ function updateTimerUI(){ const s=fmt(timer.remaining); timeEl.textContent=s; fsTime.textContent=s; startBtn.textContent=timer.running?'Pause':'Start'; fsStart.textContent=startBtn.textContent; resetBtn.disabled=!timer.running && (timer.remaining===settings.focusMinutes*60); }
+ function openLen(){ if(timer.running) return alert('Während des Fokus nicht ändern.'); lenSelect.innerHTML=""; for(let i=1;i<=180;i++){ const o=document.createElement('option'); o.value=i; o.textContent=i; if(i===settings.focusMinutes) o.selected=true; lenSelect.appendChild(o);} lenModal.style.display='flex'; }
+ function closeLen(){ lenModal.style.display='none'; }
+ function start(){ if(timer.running){ timer.running=false; clearInterval(timer.intervalId); updateTimerUI(); return; } if(!state.selectedId){ const f=state.tasks.find(t=>!t.done); if(f) state.selectedId=f.id; else return alert('Erst eine Aufgabe hinzufügen.'); } timer.boundTaskId=state.selectedId; if(timer.remaining<=0||timer.remaining>settings.focusMinutes*60) timer.remaining=settings.focusMinutes*60; timer.running=true; clearInterval(timer.intervalId); timer.intervalId=setInterval(tick,1000); updateTimerUI(); }
+ function reset(){ timer.running=false; clearInterval(timer.intervalId); timer.remaining=settings.focusMinutes*60; updateTimerUI(); }
+
+ // events
+ addBtn.onclick=()=>{ const v=(inputEl.value||'').trim(); if(!v) return; const t={id:uid(),text:v,done:false,pomodoros:0,createdAt:Date.now()}; state.tasks.unshift(t); inputEl.value=''; saveLocal(); render(); cloudCreate(t); };
+ inputEl.onkeydown=e=>{ if(e.key==='Enter') addBtn.click(); };
+ clearDoneBtn.onclick=()=>{ if(!state.tasks.some(t=>t.done)) return; state.tasks=state.tasks.filter(t=>!t.done); if(!state.tasks.find(x=>x.id===state.selectedId)) state.selectedId=null; saveLocal(); render(); cloudClearDone(); };
+ eraseAllBtn.onclick=()=>{ if(!confirm('Wirklich alles löschen?')) return; state={tasks:[],selectedId:null}; saveLocal(); render(); cloudEraseAll(); };
+ timeEl.onclick=openLen; lenSave.onclick=()=>{ settings.focusMinutes=parseInt(lenSelect.value,10)||25; saveLocal(); timer.remaining=settings.focusMinutes*60; closeLen(); updateTimerUI(); }; lenCancel.onclick=closeLen;
+ startBtn.onclick=start; fsStart.onclick=start; resetBtn.onclick=reset;
+ fsBtn.onclick=()=>{ fsWrap.classList.contains('show') ? (fsWrap.classList.remove('show')) : fsWrap.classList.add('show'); }; fsExit.onclick=()=>fsWrap.classList.remove('show');
+
+ (async function init(){ const now=new Date(); $("#today").textContent=new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(now); loadLocal(); updateTimerUI(); render(); await fetchSession(); await cloudLoad(); })();
+})();
+</script></body></html>
