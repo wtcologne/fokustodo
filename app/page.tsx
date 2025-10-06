@@ -11,62 +11,222 @@ interface SpeedTestResult {
   jitter: number
 }
 
+interface LiveSpeedData {
+  currentSpeed: number
+  averageSpeed: number
+  progress: number
+}
+
 export default function SpeedTest() {
   const [isRunning, setIsRunning] = useState(false)
   const [currentTest, setCurrentTest] = useState<string | null>(null)
   const [results, setResults] = useState<SpeedTestResult | null>(null)
   const [progress, setProgress] = useState(0)
+  const [liveSpeed, setLiveSpeed] = useState<LiveSpeedData>({ currentSpeed: 0, averageSpeed: 0, progress: 0 })
+
+  // Real ping measurement using fetch timing
+  const measurePing = async (): Promise<number> => {
+    const startTime = performance.now()
+    try {
+      await fetch('/api/ping', { 
+        method: 'HEAD',
+        cache: 'no-cache',
+        mode: 'no-cors'
+      })
+    } catch (error) {
+      // Fallback to a simple timing test
+      await fetch('https://www.google.com/favicon.ico', { 
+        method: 'HEAD',
+        cache: 'no-cache',
+        mode: 'no-cors'
+      })
+    }
+    return performance.now() - startTime
+  }
+
+  // Real download speed test
+  const measureDownloadSpeed = async (): Promise<number> => {
+    const testSizes = [1, 5, 10] // MB
+    let totalBytes = 0
+    let totalTime = 0
+    let speeds: number[] = []
+
+    for (const sizeMB of testSizes) {
+      const sizeBytes = sizeMB * 1024 * 1024
+      const testUrl = `https://speed.cloudflare.com/__down?bytes=${sizeBytes}`
+      
+      const startTime = performance.now()
+      const startBytes = totalBytes
+      
+      try {
+        const response = await fetch(testUrl, { cache: 'no-cache' })
+        const reader = response.body?.getReader()
+        
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            
+            totalBytes += value.length
+            const currentTime = performance.now()
+            const elapsed = (currentTime - startTime) / 1000 // seconds
+            const currentSpeed = (totalBytes - startBytes) / elapsed / 1024 / 1024 * 8 // Mbps
+            
+            // Update live speed display
+            setLiveSpeed({
+              currentSpeed: currentSpeed,
+              averageSpeed: totalBytes / elapsed / 1024 / 1024 * 8,
+              progress: Math.min((totalBytes - startBytes) / sizeBytes * 100, 100)
+            })
+          }
+        }
+        
+        const endTime = performance.now()
+        const testTime = (endTime - startTime) / 1000
+        const testSpeed = sizeBytes / testTime / 1024 / 1024 * 8 // Mbps
+        speeds.push(testSpeed)
+        totalTime += testTime
+        
+      } catch (error) {
+        console.error('Download test error:', error)
+        // Fallback to a smaller test
+        const fallbackUrl = `https://httpbin.org/bytes/${Math.min(sizeBytes, 1024 * 1024)}`
+        const startTime = performance.now()
+        await fetch(fallbackUrl, { cache: 'no-cache' })
+        const endTime = performance.now()
+        const testTime = (endTime - startTime) / 1000
+        const testSpeed = Math.min(sizeBytes, 1024 * 1024) / testTime / 1024 / 1024 * 8
+        speeds.push(testSpeed)
+      }
+    }
+    
+    return speeds.reduce((sum, speed) => sum + speed, 0) / speeds.length
+  }
+
+  // Real upload speed test
+  const measureUploadSpeed = async (): Promise<number> => {
+    const testSizes = [1, 2, 5] // MB
+    let speeds: number[] = []
+
+    for (const sizeMB of testSizes) {
+      const sizeBytes = sizeMB * 1024 * 1024
+      const testData = new Uint8Array(sizeBytes)
+      
+      // Fill with random data
+      for (let i = 0; i < sizeBytes; i++) {
+        testData[i] = Math.floor(Math.random() * 256)
+      }
+      
+      const startTime = performance.now()
+      
+      try {
+        // Use a test endpoint that accepts POST data
+        const response = await fetch('https://httpbin.org/post', {
+          method: 'POST',
+          body: testData,
+          headers: {
+            'Content-Type': 'application/octet-stream'
+          }
+        })
+        
+        const endTime = performance.now()
+        const testTime = (endTime - startTime) / 1000
+        const testSpeed = sizeBytes / testTime / 1024 / 1024 * 8 // Mbps
+        
+        // Update live speed display
+        setLiveSpeed({
+          currentSpeed: testSpeed,
+          averageSpeed: testSpeed,
+          progress: ((testSizes.indexOf(sizeMB) + 1) / testSizes.length) * 100
+        })
+        
+        speeds.push(testSpeed)
+        
+      } catch (error) {
+        console.error('Upload test error:', error)
+        // Fallback calculation
+        const endTime = performance.now()
+        const testTime = (endTime - startTime) / 1000
+        const testSpeed = sizeBytes / testTime / 1024 / 1024 * 8
+        speeds.push(testSpeed)
+      }
+    }
+    
+    return speeds.reduce((sum, speed) => sum + speed, 0) / speeds.length
+  }
+
+  // Jitter measurement (ping variation)
+  const measureJitter = async (): Promise<number> => {
+    const pings: number[] = []
+    const numTests = 10
+    
+    for (let i = 0; i < numTests; i++) {
+      const ping = await measurePing()
+      pings.push(ping)
+      await new Promise(resolve => setTimeout(resolve, 100)) // Small delay between pings
+    }
+    
+    // Calculate jitter as standard deviation of ping times
+    const avgPing = pings.reduce((sum, ping) => sum + ping, 0) / pings.length
+    const variance = pings.reduce((sum, ping) => sum + Math.pow(ping - avgPing, 2), 0) / pings.length
+    return Math.sqrt(variance)
+  }
 
   const runSpeedTest = async () => {
     setIsRunning(true)
     setResults(null)
     setProgress(0)
+    setLiveSpeed({ currentSpeed: 0, averageSpeed: 0, progress: 0 })
 
-    // Simuliere verschiedene Testphasen
-    const tests = [
-      { name: 'Ping Test', duration: 2000 },
-      { name: 'Download Test', duration: 5000 },
-      { name: 'Upload Test', duration: 3000 },
-      { name: 'Jitter Test', duration: 1000 }
-    ]
+    try {
+      // Ping Test
+      setCurrentTest('Ping Test')
+      setProgress(10)
+      const ping = await measurePing()
+      setProgress(25)
 
-    let totalDuration = tests.reduce((sum, test) => sum + test.duration, 0)
-    let elapsed = 0
+      // Download Test
+      setCurrentTest('Download Test')
+      setProgress(30)
+      const downloadSpeed = await measureDownloadSpeed()
+      setProgress(60)
 
-    for (const test of tests) {
-      setCurrentTest(test.name)
+      // Upload Test
+      setCurrentTest('Upload Test')
+      setProgress(65)
+      const uploadSpeed = await measureUploadSpeed()
+      setProgress(85)
+
+      // Jitter Test
+      setCurrentTest('Jitter Test')
+      setProgress(90)
+      const jitter = await measureJitter()
+      setProgress(100)
+
+      const realResults: SpeedTestResult = {
+        download: downloadSpeed,
+        upload: uploadSpeed,
+        ping: ping,
+        jitter: jitter
+      }
+
+      setResults(realResults)
       
-      // Simuliere Fortschritt für diesen Test
-      const testStart = elapsed
-      const testEnd = elapsed + test.duration
-      
-      const progressInterval = setInterval(() => {
-        elapsed += 100
-        const testProgress = Math.min((elapsed - testStart) / test.duration, 1)
-        const overallProgress = (testStart + testProgress * test.duration) / totalDuration
-        setProgress(overallProgress * 100)
-        
-        if (elapsed >= testEnd) {
-          clearInterval(progressInterval)
-        }
-      }, 100)
-
-      await new Promise(resolve => setTimeout(resolve, test.duration))
-      clearInterval(progressInterval)
+    } catch (error) {
+      console.error('Speed test error:', error)
+      // Fallback to basic measurements
+      const fallbackResults: SpeedTestResult = {
+        download: 0,
+        upload: 0,
+        ping: await measurePing(),
+        jitter: 0
+      }
+      setResults(fallbackResults)
+    } finally {
+      setIsRunning(false)
+      setCurrentTest(null)
+      setLiveSpeed({ currentSpeed: 0, averageSpeed: 0, progress: 0 })
     }
-
-    // Simuliere realistische Ergebnisse
-    const mockResults: SpeedTestResult = {
-      download: Math.random() * 200 + 50, // 50-250 Mbps
-      upload: Math.random() * 100 + 20,   // 20-120 Mbps
-      ping: Math.random() * 20 + 5,       // 5-25 ms
-      jitter: Math.random() * 5 + 1       // 1-6 ms
-    }
-
-    setResults(mockResults)
-    setIsRunning(false)
-    setCurrentTest(null)
-    setProgress(100)
   }
 
   const getSpeedColor = (speed: number, type: 'download' | 'upload') => {
@@ -138,6 +298,28 @@ export default function SpeedTest() {
               
               <h2 className="text-xl font-semibold mb-2">{currentTest}</h2>
               <p className="text-gray-600 mb-4">Bitte warten...</p>
+              
+              {/* Live Speed Display */}
+              {(currentTest === 'Download Test' || currentTest === 'Upload Test') && liveSpeed.currentSpeed > 0 && (
+                <div className="mb-6 p-4 bg-apple-gray/30 rounded-2xl">
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-apple-blue">
+                        {liveSpeed.currentSpeed.toFixed(1)}
+                      </div>
+                      <div className="text-sm text-gray-600">Aktuelle Geschwindigkeit</div>
+                      <div className="text-xs text-gray-500">Mbps</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {liveSpeed.averageSpeed.toFixed(1)}
+                      </div>
+                      <div className="text-sm text-gray-600">Durchschnitt</div>
+                      <div className="text-xs text-gray-500">Mbps</div>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               {/* Progress Bar */}
               <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
